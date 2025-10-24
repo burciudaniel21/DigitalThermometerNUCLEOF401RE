@@ -1,3 +1,6 @@
+#ifndef INTERVALTIMER_H
+#define INTERVALTIMER_H
+
 #include "mbed.h"
 
 class IntervalTimer {
@@ -30,3 +33,5 @@ public:
         lastTime = 0;
     }
 };
+
+#endif

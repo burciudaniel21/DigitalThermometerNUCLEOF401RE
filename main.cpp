@@ -2,28 +2,51 @@
 #include "IntervalTimer.h"
 #include "DS1631.h"
 #include "TemperatureManager.h"
+#include "AlertDevice.h"
 
 //Create the DS1631 connection and object
     I2C i2c(D14, D15); //using I²C communication. SDA pin is D14, and SCL pin is D15.
     DS1631 sensor(i2c);
+    AlertDevice warningLED(D2,true);
 
     IntervalTimer DS1631_Timer; //Create an instance of the Timer class
     
     TemperatureManager tempManager(sensor);
 
-int main() {
-    sensor.Start();
+    
+    void UpdateDevices() 
+    {
+        warningLED.Update();
+    }
 
-    while(true){ // main program loop
+    int main() {
+      sensor.Start();
+
+      while (true) { // main program loop
+
+        UpdateDevices();
+
         if (DS1631_Timer.HasPassed(500)) {    // every 500 ms
             float currentTemp = tempManager.GetTemperature();
             tempManager.UpdateMinMax(currentTemp);
 
             const char* status = tempManager.CheckStatus(currentTemp);
 
-                    printf("Current: %.2f °C | Status: %s | Max: %.2f | Min: %.2f\r\n",
+                  printf("Current: %.2f °C | Status: %s | Max: %.2f | Min: %.2f\r\n",
                    currentTemp, status,
                    tempManager.GetMaxTemp(), tempManager.GetMinTemp());
+
+            if(strcmp(status, "TOO HOT") == 0){ //test code for turning the LED on.
+                warningLED.ActivateFor();
+            }
+            else if(strcmp(status, "TOO COLD") == 0)
+            {
+                warningLED.ActivateFor();
+            }
+            else{
+                warningLED.Off();
+            }
         }
     }
-}
+}    
+
