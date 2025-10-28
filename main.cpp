@@ -8,6 +8,8 @@
     I2C i2c(D14, D15); //using I²C communication. SDA pin is D14, and SCL pin is D15.
     DS1631 sensor(i2c);
     AlertDevice warningLED(D2,true);
+    AlertDevice greenLED(D4,true);
+
 
     IntervalTimer DS1631_Timer; //Create an instance of the Timer class
     
@@ -17,6 +19,7 @@
     void UpdateDevices() 
     {
         warningLED.Update();
+        greenLED.Update();
     }
 
     int main() {
@@ -37,14 +40,20 @@
                    tempManager.GetMaxTemp(), tempManager.GetMinTemp());
 
             if(strcmp(status, "TOO HOT") == 0){ //test code for turning the LED on.
-                warningLED.ActivateFor();
+                warningLED.TogglePattern(400,100);
+
             }
             else if(strcmp(status, "TOO COLD") == 0)
             {
                 warningLED.ActivateFor();
             }
+            else if (strcmp(status, "NORMAL") == 0) {
+                greenLED.TogglePattern(1000, 400);
+                warningLED.Off();
+            }
             else{
                 warningLED.Off();
+                greenLED.Off();
             }
         }
     }

@@ -72,8 +72,8 @@ public:
         onDuration = onTimeMs;
         offDuration = offTimeMs;
         toggling = true;
-        timer.Reset();
-        On();
+        //timer.Reset();
+        //On();
     }
 
     // Must be called frequently in main loop
