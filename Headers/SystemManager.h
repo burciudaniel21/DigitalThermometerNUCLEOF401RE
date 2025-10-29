@@ -6,6 +6,7 @@
 #include "TemperatureManager.h"
 #include "AlertDevice.h"
 #include "IntervalTimer.h"
+#include "ToneDevice.h"
 
 class SystemManager {
 private:
@@ -14,6 +15,7 @@ private:
     TemperatureManager tempManager;
     AlertDevice warningLED;
     AlertDevice greenLED;
+    ToneDevice mainBuzzer;
     IntervalTimer timer;
 
 public:
@@ -22,7 +24,8 @@ public:
           sensor(i2c),
           tempManager(sensor),
           warningLED(D2, true),
-          greenLED(D4, true) 
+          greenLED(D4, true),
+          mainBuzzer(D3)
           {}
 
     void UpdateDevices()
@@ -50,15 +53,20 @@ public:
                 if (strcmp(status, "TOO HOT") == 0) 
                 {
                     warningLED.TogglePattern(400, 100);
+                    mainBuzzer.Beep(4000.F);
+
+
                 } 
                 else if (strcmp(status, "TOO COLD") == 0) 
                 {
                     warningLED.ActivateFor();
+                    mainBuzzer.Beep(2000.F);
                 } 
                 else if (strcmp(status, "NORMAL") == 0) 
                 {
                     greenLED.TogglePattern(1000, 400);
                     warningLED.Off();
+                    mainBuzzer.Off();
                 } 
                 else 
                 {
