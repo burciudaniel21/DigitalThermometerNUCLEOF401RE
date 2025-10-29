@@ -1,3 +1,6 @@
+#ifndef TEMPERATUREMANAGER_H
+#define TEMPERATUREMANAGER_H
+
 #include "mbed.h"
 #include "DS1631.h"
 
@@ -11,7 +14,7 @@ private:
     float minTempRecorded;
 
 public:
-    TemperatureManager(DS1631 &sensorRef, float minTemp = 20.0f, float maxTemp = 25.0f)
+    TemperatureManager(DS1631 &sensorRef, float minTemp = 25.0f, float maxTemp = 26.0f)
         : sensor(sensorRef), lowerTempLimit(minTemp), upperTempLimit(maxTemp),
           maxTempRecorded(-1000), minTempRecorded(1000) //initialisation values (impossible to reach)
           {}
@@ -49,3 +52,5 @@ public:
         minTempRecorded = 1000;
     }
 };
+#endif
+
