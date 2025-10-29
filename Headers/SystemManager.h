@@ -18,6 +18,9 @@ private:
     ToneDevice mainBuzzer;
     IntervalTimer timer;
 
+    float typeASound = 4000.F;
+    float typeBSound = 2000.F;
+
 public:
     SystemManager()
         : i2c(D14, D15),
@@ -53,14 +56,14 @@ public:
                 if (strcmp(status, "TOO HOT") == 0) 
                 {
                     warningLED.TogglePattern(400, 100);
-                    mainBuzzer.Beep(4000.F);
+                    mainBuzzer.Beep(typeASound);
 
 
                 } 
                 else if (strcmp(status, "TOO COLD") == 0) 
                 {
                     warningLED.ActivateFor();
-                    mainBuzzer.Beep(2000.F);
+                    mainBuzzer.Beep(typeBSound);
                 } 
                 else if (strcmp(status, "NORMAL") == 0) 
                 {
@@ -72,6 +75,7 @@ public:
                 {
                     warningLED.Off();
                     greenLED.Off();
+                    mainBuzzer.Off();
                 }
             }
         }

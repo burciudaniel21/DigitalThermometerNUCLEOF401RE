@@ -14,7 +14,7 @@ private:
     float minTempRecorded;
 
 public:
-    TemperatureManager(DS1631 &sensorRef, float minTemp = 27.0f, float maxTemp = 28.0f)
+    TemperatureManager(DS1631 &sensorRef, float minTemp = 24.0f, float maxTemp = 26.5f)
         : sensor(sensorRef), lowerTempLimit(minTemp), upperTempLimit(maxTemp),
           maxTempRecorded(-1000), minTempRecorded(1000) //initialisation values (impossible to reach)
           {}
@@ -32,7 +32,7 @@ public:
 
     const char* CheckStatus(float temp) //char* returns a pointer to one of those three fixed messages in memory.
     {
-        if (temp > upperTempLimit) return "TOO HOT";
+        if (temp >= upperTempLimit) return "TOO HOT";
         if (temp < lowerTempLimit) return "TOO COLD";
         return "NORMAL";
     }
