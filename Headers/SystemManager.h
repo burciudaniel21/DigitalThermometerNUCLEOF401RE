@@ -7,6 +7,7 @@
 #include "AlertDevice.h"
 #include "IntervalTimer.h"
 #include "ToneDevice.h"
+#include "DisplayManager.h"
 
 class SystemManager {
 private:
@@ -17,6 +18,8 @@ private:
     AlertDevice greenLED;
     ToneDevice mainBuzzer;
     IntervalTimer timer;
+    DisplayManager display;
+    IntervalTimer displayTimer;
 
     float typeASound = 4000.F;
     float typeBSound = 2000.F;
@@ -40,43 +43,48 @@ public:
     void Run() {
         sensor.Start();
 
+        float currentTemp = 0.0f;
+        const char* status = "NORMAL";
+        
         while (true) 
         {
-            UpdateDevices();
-
+            UpdateDevices();   // keeps LEDs and buzzer running
+            
             if (timer.HasPassed(500)) {
-                float currentTemp = tempManager.GetTemperature();
+                currentTemp = tempManager.GetTemperature();
                 tempManager.UpdateMinMax(currentTemp);
-                const char* status = tempManager.CheckStatus(currentTemp);
+                status = tempManager.CheckStatus(currentTemp);
 
                 printf("Temp: %.2f °C | Status: %s | Max: %.2f | Min: %.2f\r\n",
-                       currentTemp, status,
-                       tempManager.GetMaxTemp(), tempManager.GetMinTemp());
+                    currentTemp, status,
+                    tempManager.GetMaxTemp(), tempManager.GetMinTemp());
 
                 if (strcmp(status, "TOO HOT") == 0) 
                 {
                     warningLED.TogglePattern(400, 100);
                     mainBuzzer.Beep(typeASound);
-
-
                 } 
                 else if (strcmp(status, "TOO COLD") == 0) 
                 {
                     warningLED.ActivateFor();
                     mainBuzzer.Beep(typeBSound);
                 } 
-                else if (strcmp(status, "NORMAL") == 0) 
+                else  // NORMAL
                 {
                     greenLED.TogglePattern(1000, 400);
                     warningLED.Off();
                     mainBuzzer.Off();
-                } 
-                else 
-                {
-                    warningLED.Off();
-                    greenLED.Off();
-                    mainBuzzer.Off();
                 }
+            }
+
+            // --- LCD update (NON-BLOCKING) ---
+            if (displayTimer.HasPassed(500)) {
+                display.ShowData(
+                    currentTemp,
+                    tempManager.GetMinTemp(),
+                    tempManager.GetMaxTemp(),
+                    status
+                );
             }
         }
     }

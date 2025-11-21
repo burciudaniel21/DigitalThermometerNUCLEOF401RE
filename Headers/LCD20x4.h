@@ -121,6 +121,24 @@ public:
             text++;
         }
     }
+
+        /**
+     * Creates a custom 5x8 character in CGRAM.
+     * index must be 0–7. pattern is an array of 8 bytes (each 5 bits used).
+     */
+    void createChar(uint8_t index, const uint8_t pattern[8]) {
+        index &= 0x07;              // Only 0–7 allowed
+        command(0x40 | (index << 3));  // Set CGRAM address
+
+        for (int i = 0; i < 8; i++) {
+            send(pattern[i], 1);    // Write each row of the character
+        }
+    }
+
+        void writeChar(uint8_t index) {
+        send(index, 1);  // 1 = data mode
+    }
+
 };
 
 
