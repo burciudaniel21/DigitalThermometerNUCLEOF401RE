@@ -20,6 +20,7 @@ private:
     IntervalTimer timer;
     DisplayManager display;
     IntervalTimer displayTimer;
+    IntervalTimer hourlyResetTimer;
 
     float typeASound = 4000.F;
     float typeBSound = 2000.F;
@@ -86,6 +87,12 @@ public:
                     status
                 );
             }
+                        
+            if (hourlyResetTimer.HasPassed(3600000)) // 1 hour
+            { 
+                tempManager.ResetMinMax();
+            }
+            
         }
     }
 };
