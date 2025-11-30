@@ -8,6 +8,7 @@
 #include "IntervalTimer.h"
 #include "ToneDevice.h"
 #include "DisplayManager.h"
+#include <cstdio>
 
 class SystemManager {
 private:
@@ -21,6 +22,9 @@ private:
     DisplayManager display;
     IntervalTimer displayTimer;
     IntervalTimer hourlyResetTimer;
+    DigitalIn btnUp;
+    DigitalIn btnDown;
+    DigitalIn btnSelect;
 
     float typeASound = 4000.F;
     float typeBSound = 2000.F;
@@ -32,7 +36,10 @@ public:
           tempManager(sensor),
           warningLED(D2, true),
           greenLED(D4, true),
-          mainBuzzer(D3)
+          mainBuzzer(D3),
+          btnUp(D6, PullUp),
+          btnDown(D7, PullUp),
+          btnSelect(D5, PullUp)
           {}
 
     void UpdateDevices()
@@ -41,7 +48,10 @@ public:
         greenLED.Update();
     }
 
-    void Run() {
+    void Run() 
+    {
+        InitialSetup();
+
         sensor.Start();
 
         float currentTemp = 0.0f;
@@ -84,6 +94,8 @@ public:
                     currentTemp,
                     tempManager.GetMinTemp(),
                     tempManager.GetMaxTemp(),
+                    tempManager.GetLowerThreshold(),
+                    tempManager.GetUpperThreshold(),
                     status
                 );
             }
@@ -93,6 +105,78 @@ public:
                 tempManager.ResetMinMax();
             }
             
+        }
+    }
+
+    void InitialSetup()
+    {   
+        float lower = tempManager.GetLowerThreshold();
+        float upper = tempManager.GetUpperThreshold();
+        bool settingLowerThreshold = true;
+        bool settingUpperThreshold = false;
+        bool setupComplete = false;
+        char buffer[21];
+
+        while (!setupComplete) 
+        {
+            if (displayTimer.HasPassed(250)) 
+            {
+                if(settingLowerThreshold)
+                {
+                    snprintf(buffer, sizeof(buffer), "Min Temp:%.0f", lower);
+                }
+                else if(settingUpperThreshold)
+                {
+
+                    snprintf(buffer, sizeof(buffer), "Upper Temp:%.0f", upper);
+                }
+                display.PrintDataOnRow(0, buffer);
+                display.PrintDataOnRow(1, "UP to Increase");
+                display.PrintDataOnRow(2, "DOWN to decrease");
+                display.PrintDataOnRow(3, "SELECT to confirm");                
+            }
+            // Active LOW: 0 = pressed, 1 = not pressed
+            if (btnUp.read() == 0) 
+            { 
+                if (settingUpperThreshold) 
+                {
+                    upper += 1;
+                } 
+                else if (lower < upper - 1) 
+                {
+                    lower += 1;
+                }
+                ThisThread::sleep_for(150ms);
+            }                    
+            if (btnDown.read() == 0) 
+            {
+                if (settingUpperThreshold) 
+                {
+                    if (upper > lower + 1) 
+                    {
+                        upper -= 1;
+                    }
+                } 
+                else
+                { 
+                    lower -= 1;                
+                    ThisThread::sleep_for(150ms);
+                }
+            }
+            if (btnSelect.read() == 0)
+            {                    
+                if (settingLowerThreshold)
+                {
+                    settingLowerThreshold = false;
+                    settingUpperThreshold = true;
+                }
+                else if (settingUpperThreshold)
+                {
+                    tempManager.SetThresholds(lower, upper);
+                    setupComplete = true;
+                }
+                ThisThread::sleep_for(250ms);
+            }
         }
     }
 };

@@ -26,37 +26,62 @@ public:
 
     }
 
-    void ShowData(float current, float min, float max, const char* status) 
+    void ShowData(float current, float min, float max, float lower, float upper, const char* status) 
     {
-        char buffer[21];
-
+        char buf[21];
         lcd.clear();
 
-        // Line 1: Current temperature
+
+
+        // --- Line 1 & 2: Min and Max ---
         lcd.setCursor(0, 0);
-        snprintf(buffer, sizeof(buffer), "Now: %.2f ", current);
-        lcd.print(buffer);
-        lcd.writeChar(0);   // print the degree symbol
+        snprintf(buf, sizeof(buf), "Min recorded: %.1f", min);
+        lcd.print(buf);
+        lcd.writeChar(0);
         lcd.print("C");
 
-        // Line 2: Min
         lcd.setCursor(0, 1);
-        snprintf(buffer, sizeof(buffer), "Min: %.2f ", min);
-        lcd.print(buffer);
-        lcd.writeChar(0);   // print the degree symbol
+        snprintf(buf, sizeof(buf), "Max recorded: %.1f", max);
+        lcd.print(buf);
+        lcd.writeChar(0);
         lcd.print("C");
 
-        // Line 3: Max
+        // --- Line 3: Current temperature ---
         lcd.setCursor(0, 2);
-        snprintf(buffer, sizeof(buffer), "Max: %.2f ", max);
-        lcd.print(buffer);
-        lcd.writeChar(0);   // print the degree symbol
+        snprintf(buf, sizeof(buf), "Current temp: %.1f", current);
+        lcd.print(buf);
+        lcd.writeChar(0); // degree symbol
         lcd.print("C");
 
-        // Line 4: Status
+        // --- Line 3: User thresholds ---
+        /*lcd.setCursor(0, 2);
+        snprintf(buf, sizeof(buf), "Lo:%.1f", lower);
+        lcd.print(buf);
+        lcd.writeChar(0);
+        lcd.print("C");
+
+        lcd.setCursor(10, 2);
+        snprintf(buf, sizeof(buf), "Hi:%.1f", upper);
+        lcd.print(buf);
+        lcd.writeChar(0);
+        lcd.print("C");*/
+
+        // --- Line 4: Status ---
         lcd.setCursor(0, 3);
-        lcd.print(status); 
+        lcd.print("Status: ");
+        lcd.print(status);
     }
+
+    void PrintDataOnRow(int row, const char* text)
+    {
+        if(row < 4 && text != nullptr)
+        {
+            lcd.setCursor(0, row);
+            lcd.print("                    ");
+            lcd.setCursor(0, row);
+            lcd.print(text);
+        }
+    }  
 };
 
 #endif

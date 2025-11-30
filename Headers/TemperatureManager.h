@@ -14,7 +14,7 @@ private:
     float minTempRecorded;
 
 public:
-    TemperatureManager(DS1631 &sensorRef, float minTemp = 20.0f, float maxTemp = 26.5f)
+    TemperatureManager(DS1631 &sensorRef, float minTemp = 20, float maxTemp = 26)
         : sensor(sensorRef), lowerTempLimit(minTemp), upperTempLimit(maxTemp),
           maxTempRecorded(-1000), minTempRecorded(1000) //initialisation values (impossible to reach)
           {}
@@ -45,6 +45,8 @@ public:
 
     float GetMaxTemp() const { return maxTempRecorded; }
     float GetMinTemp() const { return minTempRecorded; }
+    float GetUpperThreshold() const {return upperTempLimit;}
+    float GetLowerThreshold() const {return lowerTempLimit;}
 
     void ResetMinMax() 
     {
