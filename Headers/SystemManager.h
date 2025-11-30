@@ -109,73 +109,90 @@ public:
     }
 
     void InitialSetup()
-    {   
+    {
         float lower = tempManager.GetLowerThreshold();
         float upper = tempManager.GetUpperThreshold();
-        bool settingLowerThreshold = true;
-        bool settingUpperThreshold = false;
+
+        bool settingLower = true;
+        bool settingUpper = false;
+        bool updateDisplay = true;
+
         bool setupComplete = false;
         char buffer[21];
 
-        while (!setupComplete) 
-        {
-            if (displayTimer.HasPassed(250)) 
-            {
-                if(settingLowerThreshold)
-                {
-                    snprintf(buffer, sizeof(buffer), "Min Temp:%.0f", lower);
-                }
-                else if(settingUpperThreshold)
-                {
+        IntervalTimer debounceTimer;   // prevents button spam
+        const int debounceDelay = 200; // between accepted presses
 
-                    snprintf(buffer, sizeof(buffer), "Upper Temp:%.0f", upper);
-                }
-                display.PrintDataOnRow(0, buffer);
-                display.PrintDataOnRow(1, "UP to Increase");
-                display.PrintDataOnRow(2, "DOWN to decrease");
-                display.PrintDataOnRow(3, "SELECT to confirm");                
-            }
-            // Active LOW: 0 = pressed, 1 = not pressed
-            if (btnUp.read() == 0) 
-            { 
-                if (settingUpperThreshold) 
-                {
-                    upper += 1;
-                } 
-                else if (lower < upper - 1) 
-                {
-                    lower += 1;
-                }
-                ThisThread::sleep_for(150ms);
-            }                    
-            if (btnDown.read() == 0) 
+        while (!setupComplete)
+        {
+            if (updateDisplay)
             {
-                if (settingUpperThreshold) 
+                if (settingLower)
                 {
-                    if (upper > lower + 1) 
-                    {
-                        upper -= 1;
-                    }
-                } 
+                    snprintf(buffer, sizeof(buffer), "Min Temp: %.0f", lower);
+                }
                 else
-                { 
-                    lower -= 1;                
-                    ThisThread::sleep_for(150ms);
+                {
+                    snprintf(buffer, sizeof(buffer), "Max Temp: %.0f", upper);
                 }
+
+                display.PrintDataOnRow(0, buffer);
+                display.PrintCelsiusSymbol();
+                display.PrintDataOnRow(1, "UP     +1");
+                display.PrintCelsiusSymbol();
+                display.PrintDataOnRow(2, "DOWN   -1");
+                display.PrintCelsiusSymbol();
+                display.PrintDataOnRow(3, "SELECT to continue");
+                updateDisplay = false;
             }
-            if (btnSelect.read() == 0)
-            {                    
-                if (settingLowerThreshold)
+
+            // Button presses are accepted only when debounce timer expires
+            if (debounceTimer.HasPassed(debounceDelay))
+            {                                
+                if (btnUp.read() == 0)
                 {
-                    settingLowerThreshold = false;
-                    settingUpperThreshold = true;
+                    if (settingLower)
+                    {
+                        if (lower < upper - 1)
+                            lower++;
+                    }
+                    else
+                    {
+                        upper++;
+                    }
+                    updateDisplay = true;
+                    debounceTimer.Reset();
                 }
-                else if (settingUpperThreshold)
+
+                if (btnDown.read() == 0)
                 {
-                    tempManager.SetThresholds(lower, upper);
-                    setupComplete = true;
+                    if (settingLower)
+                    {
+                        lower--;
+                    }
+                    else if (upper > lower + 1)
+                    {
+                        upper--;
+                    }
+                    updateDisplay = true;
+                    debounceTimer.Reset();
                 }
-                ThisThread::sleep_for(250ms);
+
+                if (btnSelect.read() == 0)
+                {
+                    if (settingLower)
+                    {
+                        settingLower = false;
+                        settingUpper = true;
+                    }
+                    else // final confirmation
+                    {
+                        tempManager.SetThresholds(lower, upper);
+                        setupComplete = true;
+                    }
+                    updateDisplay = true;
+                    debounceTimer.Reset();
+                }
             }
         }
     }

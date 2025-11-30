@@ -37,20 +37,20 @@ public:
         lcd.setCursor(0, 0);
         snprintf(buf, sizeof(buf), "Min recorded: %.1f", min);
         lcd.print(buf);
-        lcd.writeChar(0);
+        PrintCelsiusSymbol();
         lcd.print("C");
 
         lcd.setCursor(0, 1);
         snprintf(buf, sizeof(buf), "Max recorded: %.1f", max);
         lcd.print(buf);
-        lcd.writeChar(0);
+        PrintCelsiusSymbol();
         lcd.print("C");
 
         // --- Line 3: Current temperature ---
         lcd.setCursor(0, 2);
         snprintf(buf, sizeof(buf), "Current temp: %.1f", current);
         lcd.print(buf);
-        lcd.writeChar(0); // degree symbol
+        PrintCelsiusSymbol();
         lcd.print("C");
 
         // --- Line 3: User thresholds ---
@@ -82,6 +82,11 @@ public:
             lcd.print(text);
         }
     }  
+
+    void PrintCelsiusSymbol()
+    {
+        lcd.writeChar(0);
+    }
 };
 
 #endif
