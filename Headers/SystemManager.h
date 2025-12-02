@@ -61,7 +61,8 @@ public:
         {
             UpdateDevices();   // keeps LEDs and buzzer running
             
-            if (timer.HasPassed(500)) {
+            if (timer.HasPassed(500)) 
+            {
                 currentTemp = tempManager.GetTemperature();
                 tempManager.UpdateMinMax(currentTemp);
                 status = tempManager.CheckStatus(currentTemp);
@@ -89,13 +90,12 @@ public:
             }
 
             // --- LCD update (NON-BLOCKING) ---
-            if (displayTimer.HasPassed(500)) {
+            if (displayTimer.HasPassed(500)) 
+            {
                 display.ShowData(
                     currentTemp,
                     tempManager.GetMinTemp(),
                     tempManager.GetMaxTemp(),
-                    tempManager.GetLowerThreshold(),
-                    tempManager.GetUpperThreshold(),
                     status
                 );
             }
