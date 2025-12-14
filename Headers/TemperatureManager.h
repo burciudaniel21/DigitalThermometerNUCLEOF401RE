@@ -14,7 +14,7 @@ private:
     float minTempRecorded;
 
 public:
-    TemperatureManager(DS1631 &sensorRef, float minTemp = 20, float maxTemp = 26)
+    TemperatureManager(DS1631 &sensorRef, float minTemp = 20, float maxTemp = 30)
         : sensor(sensorRef), lowerTempLimit(minTemp), upperTempLimit(maxTemp),
           maxTempRecorded(-1000), minTempRecorded(1000) //initialisation values (impossible to reach)
           {}
