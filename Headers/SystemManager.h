@@ -25,9 +25,13 @@ private:
     DigitalIn btnUp;
     DigitalIn btnDown;
     DigitalIn btnSelect;
+    BufferedSerial loggerSerial;
+    IntervalTimer logTimer;
 
     float typeASound = 4000.F;
     float typeBSound = 2000.F;
+
+    static const int loggerBaud = 9600;
 
 public:
     SystemManager()
@@ -39,7 +43,8 @@ public:
           mainBuzzer(D3),
           btnUp(D6, PullUp),
           btnDown(D7, PullUp),
-          btnSelect(D5, PullUp)
+          btnSelect(D5, PullUp),
+          loggerSerial(D1, D0, loggerBaud)   // TX, RX, baud
           {}
 
     void UpdateDevices()
@@ -66,9 +71,9 @@ public:
                 tempManager.UpdateMinMax(currentTemp);
                 status = tempManager.CheckStatus(currentTemp);
 
-                printf("Temp: %.2f °C | Status: %s | Max: %.2f | Min: %.2f\r\n",
+               /* printf("Temp: %.2f °C | Status: %s | Max: %.2f | Min: %.2f\r\n",
                     currentTemp, status,
-                    tempManager.GetMaxTemp(), tempManager.GetMinTemp());
+                    tempManager.GetMaxTemp(), tempManager.GetMinTemp()); */
 
                 if (strcmp(status, "TOO HOT") == 0) 
                 {
@@ -103,6 +108,11 @@ public:
             if (hourlyResetTimer.HasPassed(3600000)) // 1 hour
             { 
                 tempManager.ResetMinMax();
+            }
+
+            if (logTimer.HasPassed(1000)) //send data every 1 sec
+            {
+                LogToExternal(currentTemp, tempManager.GetMinTemp(), tempManager.GetMaxTemp(), status);
             }
             
         }
@@ -195,6 +205,20 @@ public:
                 }
             }
         }
+    }
+
+    void LogToExternal(float temp, float minT, float maxT, const char* status)
+    { //used to send data to Arduino (or other device)
+        char buffer[80];
+
+        int len = snprintf(
+            buffer,
+            sizeof(buffer),
+            "LOG,TEMP=%.2f,MIN=%.2f,MAX=%.2f,STATUS=%s\r\n",
+            temp, minT, maxT, status
+        );
+
+        loggerSerial.write(buffer, len);
     }
 };
 
